@@ -108,7 +108,7 @@
         <!-- 側邊欄標頭 -->
         <div class="sticky top-0 bg-[#f7f4ee] border-b border-[#e2d5c3] px-6 py-4 flex items-center justify-between z-10">
             <h2 class="text-xl font-black text-[#614f39] flex items-center gap-2">
-                <i class="fa-solid fa-cloud text-[#b09978]"></i> Bear.saving 雲端
+                <i class="fa-solid fa-cloud text-[#b09978]"></i> Little Little Bear Savingss 雲端
             </h2>
             <button onclick="toggleSettingsSidebar()" class="w-8 h-8 rounded-full bg-white border border-[#e2d5c3] flex items-center justify-center text-[#796348] hover:bg-[#e2d5c3] transition-colors">
                 <i class="fa-solid fa-xmark"></i>
@@ -117,7 +117,7 @@
         
         <!-- 側邊欄內容 -->
         <div class="p-6 flex-1 text-center">
-            <h3 class="text-2xl font-serif font-black text-[#796348] mb-2 tracking-wide">Bear.saving</h3>
+            <h3 class="text-2xl font-serif font-black text-[#796348] mb-2 tracking-wide">Little Little Bear Savingss</h3>
             <p class="text-xs text-[#947c5d] mb-6">不只是財務工具，這裡是一個接住你財務焦慮的地方</p>
             
             <div class="inline-block bg-[#f0e6d6] rounded-full px-4 py-1 text-[10px] font-bold text-[#796348] border border-[#e2d5c3] mb-8 shadow-xs">
@@ -225,12 +225,37 @@
         ];
         let aiEncouragementCache = "";
 
+// 永久累計總金額
+let lifetimeBase = Number(localStorage.getItem('little_bear_lifetime_base')) || 0;
+
+function getCurrentSavingsTotal() {
+    let total = 0;
+    fundsData.forEach((fund) => {
+        if (fund.isSummary || fund.isWishlist) return;
+        const st = savedState[fund.id] || {};
+        if (fund.isVariableStash) {
+            (st.records || []).forEach(r => total += Number(r.amount) || 0);
+        } else {
+            for (let i = 1; i <= fund.months; i++) {
+                if (typeof st[i] === 'number') total += st[i];
+            }
+        }
+    });
+    return total;
+}
+
+function getLifetimeTotal() {
+    return lifetimeBase + getCurrentSavingsTotal();
+}
+
+
         // --- 備份與還原功能 ---
         function exportDataToJson() {
             // 打包存錢進度與願望清單
             const exportData = {
                 savingsState: savedState,
                 wishlist: wishlistData,
+                lifetimeBase: lifetimeBase,
                 exportDate: new Date().toISOString()
             };
 
@@ -264,7 +289,11 @@
                         // 覆蓋本地變數
                         savedState = importedData.savingsState;
                         wishlistData = importedData.wishlist;
-                        
+                        if (importedData.lifetimeBase !== undefined) {
+                            lifetimeBase = Number(importedData.lifetimeBase) || 0;
+                            localStorage.setItem('little_bear_lifetime_base', String(lifetimeBase));
+                        }
+
                         // 存入 LocalStorage
                         localStorage.setItem('bear_savings_state_v8', JSON.stringify(savedState));
                         localStorage.setItem('bear_wishlist_v8', JSON.stringify(wishlistData));
@@ -361,8 +390,9 @@
             return {
                 savingsState: savedState,
                 wishlist: wishlistData,
+                lifetimeBase: lifetimeBase,
                 exportDate: new Date().toISOString(),
-                app: 'Bear.saving'
+                app: 'Little Little Bear Savingss'
             };
         }
 
@@ -407,7 +437,7 @@
                 setCloudStatus('正在從 Google Drive 載入…');
                 const token = googleAccessToken || await getGoogleToken();
                 const file = await findDriveBackup(token);
-                if (!file) throw new Error('Google Drive 中還沒有 Bear.saving 備份');
+                if (!file) throw new Error('Google Drive 中還沒有 Little Little Bear Savingss 備份');
                 const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
                     headers: { Authorization: 'Bearer ' + token }
                 });
@@ -418,7 +448,11 @@
                 }
                 savedState = importedData.savingsState;
                 wishlistData = importedData.wishlist;
-                localStorage.setItem('bear_savings_state_v8', JSON.stringify(savedState));
+                if (importedData.lifetimeBase !== undefined) {
+                    lifetimeBase = Number(importedData.lifetimeBase) || 0;
+                    localStorage.setItem('little_bear_lifetime_base', String(lifetimeBase));
+                }
+                localStorage.setItem('bear_savings_state_v8' , JSON.stringify(savedState));
                 localStorage.setItem('bear_wishlist_v8', JSON.stringify(wishlistData));
                 updateHeaderTotals();
                 renderApp();
@@ -525,24 +559,8 @@
         }
 
         function updateHeaderTotals() {
-            let totalSaved = 0;
-            let totalTarget = 196000;
-
-            fundsData.forEach((fund) => {
-                if (fund.isSummary || fund.isWishlist) return;
-                const fundState = savedState[fund.id] || {};
-                if (fund.isVariableStash) {
-                    const records = fundState.records || [];
-                    records.forEach(r => totalSaved += r.amount);
-                } else {
-                    for (let i = 1; i <= fund.months; i++) {
-                        if (fundState[i] && typeof fundState[i] === 'number') {
-                            totalSaved += fundState[i];
-                        }
-                    }
-                }
-            });
-
+            const totalSaved = getLifetimeTotal();
+            const totalTarget = 196000;
             document.getElementById('headerTotalAmount').innerText = '$' + totalSaved.toLocaleString();
             const percent = Math.min(100, Math.round((totalSaved / totalTarget) * 100));
             document.getElementById('headerTotalPercent').innerText = percent + '%';
@@ -955,6 +973,7 @@
                     `;
                 });
 
+                totalSaved = getLifetimeTotal();
                 const totalPercentage = Math.min(100, Math.round((totalSaved / totalTarget) * 100));
 
                 container.innerHTML = `
