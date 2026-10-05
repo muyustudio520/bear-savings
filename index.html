@@ -660,7 +660,10 @@ function getLifetimeTotal() {
 
             const noteRes = await showCustomModal('備註說明', '請輸入這筆存錢的備註（例如：發票中獎、零錢投遞）：', 'text', '');
             
-            const fundId = 'fund8';
+            
+            // 備註階段按取消，整筆新增都取消
+            if (noteRes === false) return;
+const fundId = 'fund8';
             const fundState = savedState[fundId] || { records: [] };
             if (!fundState.records) fundState.records = [];
             
