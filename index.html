@@ -124,8 +124,8 @@
 
             <!-- 狀態顯示區 -->
             <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-4 mb-6 text-left shadow-inner">
-                <p class="text-[10px] text-[#947c5d] mb-1 font-bold">目前登入狀態</p>
-                <p class="text-base font-black text-[#614f39]" id="cloudStatusText">尚未登入</p>
+                <p class="text-[10px] text-[#947c5d] mb-1 font-bold">目前雲端狀態</p>
+                <p class="text-base font-black text-[#614f39]" id="cloudStatusText">尚未登入，可使用本地備份</p>
             </div>
 
             <!-- 登入表單 -->
@@ -151,20 +151,23 @@
 
             <!-- 操作按鈕群 -->
             <div class="space-y-3">
-                <button onclick="mockCloudAction('註冊功能暫未開放，請先使用本地儲存。')" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                <button onclick="mockCloudAction('註冊功能暫未開放，請先使用下方本地備份。')" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
                     <i class="fa-solid fa-user-plus"></i> 註冊雲端帳號
                 </button>
                 
-                <button onclick="mockCloudAction('登入功能暫未開放，請先使用本地儲存。')" class="w-full py-3.5 bg-white border-2 border-[#8c6d53] text-[#8c6d53] hover:bg-[#fcf9f2] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                <button onclick="mockCloudAction('登入功能暫未開放，請先使用下方本地備份。')" class="w-full py-3.5 bg-white border-2 border-[#8c6d53] text-[#8c6d53] hover:bg-[#fcf9f2] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> 登入並載入雲端資料
                 </button>
                 
-                <button onclick="mockCloudAction('資料已同步至模擬雲端！(實際上僅儲存於本機瀏覽器)')" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> 把目前資料同步到雲端
+                <!-- 新增的隱藏檔案輸入框 -->
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="loadDataFromJson(event)">
+
+                <button onclick="exportDataToJson()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 把目前資料同步到雲端 (下載備份)
                 </button>
 
-                <button onclick="mockCloudAction('已嘗試從模擬雲端下載資料。(實際上僅讀取本機瀏覽器儲存)')" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> 從雲端載回資料
+                <button onclick="document.getElementById('jsonFileInput').click()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> 從雲端載回資料 (讀取備份)
                 </button>
             </div>
         </div>
@@ -234,25 +237,86 @@
         ];
         let aiEncouragementCache = "";
 
+        // --- 備份與還原功能 ---
+        function exportDataToJson() {
+            // 打包存錢進度與願望清單
+            const exportData = {
+                savingsState: savedState,
+                wishlist: wishlistData,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const fileName = `BearSaving_Backup_${dateStr}.json`;
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('✅ 資料已成功備份下載！', 'success');
+        }
+
+        function loadDataFromJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+
+                    // 檢查格式是否正確包含我們的資料
+                    if (importedData.savingsState !== undefined && importedData.wishlist !== undefined) {
+                        // 覆蓋本地變數
+                        savedState = importedData.savingsState;
+                        wishlistData = importedData.wishlist;
+                        
+                        // 存入 LocalStorage
+                        localStorage.setItem('bear_savings_state_v8', JSON.stringify(savedState));
+                        localStorage.setItem('bear_wishlist_v8', JSON.stringify(wishlistData));
+                        
+                        // 重新渲染畫面
+                        updateHeaderTotals();
+                        renderApp();
+                        
+                        // 關閉側邊欄並通知
+                        toggleSettingsSidebar();
+                        showToast('☁️ 資料已成功從備份檔載回！', 'success');
+                    } else {
+                        showToast('❌ 檔案格式錯誤！找不到存錢紀錄。', 'error');
+                    }
+                } catch (error) {
+                    showToast('❌ 檔案格式錯誤！請確保上傳的是 .json 備份檔。', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            event.target.value = ''; // 清空欄位以便下次選擇同一個檔案
+        }
+        // ------------------------
+
         function toggleSettingsSidebar() {
             const sidebar = document.getElementById('settingsSidebar');
             const overlay = document.getElementById('settingsSidebarOverlay');
             
             if (sidebar.classList.contains('translate-x-full')) {
-                // 開啟
                 overlay.classList.remove('hidden');
-                // 稍微延遲讓 display: block 生效後再加 opacity
                 setTimeout(() => {
                     overlay.classList.remove('opacity-0');
                     sidebar.classList.remove('translate-x-full');
                 }, 10);
             } else {
-                // 關閉
                 overlay.classList.add('opacity-0');
                 sidebar.classList.add('translate-x-full');
                 setTimeout(() => {
                     overlay.classList.add('hidden');
-                }, 300); // 等待 transition 結束
+                }, 300);
             }
         }
 
@@ -260,7 +324,6 @@
             showToast(message, 'info');
         }
 
-        // Web Audio API Pleasant Coin / Chime Sound
         function playDepositSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -268,7 +331,6 @@
                     audioCtx.resume();
                 }
                 const now = audioCtx.currentTime;
-
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 
@@ -285,7 +347,7 @@
                 osc.start(now);
                 osc.stop(now + 0.6);
             } catch (e) {
-                console.log('Audio not supported or blocked', e);
+                console.log('Audio not supported', e);
             }
         }
 
@@ -421,7 +483,6 @@
             return { currentAmount, target, percentage, remaining };
         }
 
-        // 2-Click Toggle: 1st click saves default amount, 2nd click prompts to cancel
         async function quickDeposit(fundId, monthIndex, defaultMonthly) {
             const fundState = savedState[fundId] || {};
             const currentVal = fundState[monthIndex];
@@ -445,7 +506,6 @@
             }
         }
 
-        // Manual Deposit prompt for any month
         async function manualDeposit(fundId, monthIndex) {
             const fund = fundsData.find(f => f.id === fundId);
             const fundState = savedState[fundId] || {};
@@ -476,7 +536,7 @@
                 id: Date.now(),
                 date: new Date().toLocaleDateString(),
                 amount: amount,
-                note: '隨機零錢存入'
+                note: noteRes || '隨機零錢存入'
             });
 
             savedState[fundId] = fundState;
