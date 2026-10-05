@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奶茶色系熊熊存錢計畫</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fcf9f2;
+            color: #614f39;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7f4ee;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4c5b9;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b09978;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(176, 153, 120, 0.1), 0 8px 10px -6px rgba(176, 153, 120, 0.1);
+        }
+        #settingsSidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-[#e2d5c3] selection:text-[#614f39]">
+
+    <!-- Top Header -->
+    <header class="bg-[#f7f4ee] border-b border-[#e2d5c3] sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-[#f0e6d6] border border-[#e2d5c3] flex items-center justify-center text-xl shadow-xs">
+                        🧸
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-black text-[#614f39] tracking-wide flex items-center gap-2">
+                            奶茶色系熊熊存錢計畫 🤎
+                        </h1>
+                        <p class="text-[11px] text-[#947c5d]">每一分存下的錢，都是給未來自己的溫柔擁抱 ✨</p>
+                    </div>
+                </div>
+                <button onclick="toggleSettingsSidebar()" class="sm:hidden w-10 h-10 rounded-2xl bg-white border border-[#e2d5c3] flex items-center justify-center text-[#796348] hover:bg-[#f0e6d6] shadow-xs transition-colors">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </button>
+            </div>
+            
+            <!-- Quick Stats Summary -->
+            <div class="flex items-center gap-3 bg-white border border-[#e2d5c3] rounded-2xl px-4 py-2 shadow-xs w-full sm:w-auto justify-between sm:justify-end">
+                <div class="text-left sm:text-right">
+                    <p class="text-[10px] text-[#947c5d]">總資產累積</p>
+                    <p id="headerTotalAmount" class="text-base font-black text-[#614f39]">$0</p>
+                </div>
+                <div class="h-6 w-px bg-[#e2d5c3]"></div>
+                <div class="text-left sm:text-right">
+                    <p class="text-[10px] text-[#947c5d]">整體達成率</p>
+                    <p id="headerTotalPercent" class="text-base font-black text-[#8c6d53]">0%</p>
+                </div>
+                <div class="hidden sm:block h-6 w-px bg-[#e2d5c3]"></div>
+                <button onclick="toggleSettingsSidebar()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#f7f4ee] hover:bg-[#f0e6d6] border border-[#e2d5c3] text-[#796348] text-xs font-bold transition-colors">
+                    <i class="fa-solid fa-cloud"></i> 雲端同步
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs (Bank / Location Names) -->
+    <nav class="bg-white border-b border-[#e2d5c3] py-2.5 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 overflow-x-auto">
+            <div id="tabsContainer" class="flex items-center space-x-2 min-w-max pb-1">
+                <!-- Tabs generated dynamically -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+        <div id="appContainer">
+            <!-- Dynamic Content -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#f7f4ee] border-t border-[#e2d5c3] py-4 text-center text-xs text-[#947c5d]">
+        <p>🧸 奶茶色系熊熊存錢計畫 &copy; 2026 | 慢慢存，走向理想生活 ✨</p>
+    </footer>
+
+    <div id="settingsSidebarOverlay" onclick="toggleSettingsSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 hidden transition-opacity opacity-0"></div>
+    <div id="settingsSidebar" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#fcf9f2] z-50 transform translate-x-full shadow-2xl border-l border-[#e2d5c3] overflow-y-auto flex flex-col">
+        <!-- 側邊欄標頭 -->
+        <div class="sticky top-0 bg-[#f7f4ee] border-b border-[#e2d5c3] px-6 py-4 flex items-center justify-between z-10">
+            <h2 class="text-xl font-black text-[#614f39] flex items-center gap-2">
+                <i class="fa-solid fa-cloud text-[#b09978]"></i> Bear.saving 雲端
+            </h2>
+            <button onclick="toggleSettingsSidebar()" class="w-8 h-8 rounded-full bg-white border border-[#e2d5c3] flex items-center justify-center text-[#796348] hover:bg-[#e2d5c3] transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <!-- 側邊欄內容 -->
+        <div class="p-6 flex-1 text-center">
+            <h3 class="text-2xl font-serif font-black text-[#796348] mb-2 tracking-wide">Bear.saving</h3>
+            <p class="text-xs text-[#947c5d] mb-6">不只是財務工具，這裡是一個接住你財務焦慮的地方</p>
+            
+            <div class="inline-block bg-[#f0e6d6] rounded-full px-4 py-1 text-[10px] font-bold text-[#796348] border border-[#e2d5c3] mb-8 shadow-xs">
+                v2026.10.05 · 網頁版
+            </div>
+
+            <!-- 狀態顯示區 -->
+            <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-4 mb-6 text-left shadow-inner">
+                <p class="text-[10px] text-[#947c5d] mb-1 font-bold">目前雲端狀態</p>
+                <p class="text-base font-black text-[#614f39]" id="cloudStatusText">尚未登入，可使用本地備份</p>
+            </div>
+
+            <!-- 登入表單 -->
+            <div class="space-y-4 text-left mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-[#796348] mb-1">Email</label>
+                    <input type="email" id="cloudEmail" class="w-full px-4 py-3 bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl text-[#614f39] focus:outline-none focus:border-[#b09978] focus:bg-white text-sm transition-colors" placeholder="請輸入 Email">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-[#796348] mb-1">密碼</label>
+                    <input type="password" id="cloudPassword" class="w-full px-4 py-3 bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl text-[#614f39] focus:outline-none focus:border-[#b09978] focus:bg-white text-sm transition-colors" placeholder="請輸入密碼 (至少 6 碼)">
+                </div>
+                
+                <div>
+                    <button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f0e6d6] hover:bg-[#e2d5c3] border border-[#d4c5b9] rounded-xl text-[11px] font-bold text-[#796348] transition-colors shadow-xs" onclick="mockCloudAction('忘記密碼功能尚未實作')">
+                        <i class="fa-solid fa-key text-[10px]"></i> 忘記密碼？
+                    </button>
+                    <p class="text-[10px] text-[#b09978] mt-2 leading-relaxed">
+                        如果忘記密碼，先輸入註冊信箱，再按「忘記密碼？」系統會寄重設信到信箱。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 操作按鈕群 -->
+            <div class="space-y-3">
+                <button onclick="mockCloudAction('註冊功能暫未開放，請先使用下方本地備份。')" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> 註冊雲端帳號
+                </button>
+                
+                <button onclick="mockCloudAction('登入功能暫未開放，請先使用下方本地備份。')" class="w-full py-3.5 bg-white border-2 border-[#8c6d53] text-[#8c6d53] hover:bg-[#fcf9f2] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> 登入並載入雲端資料
+                </button>
+                
+                <!-- 新增的隱藏檔案輸入框 -->
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="loadDataFromJson(event)">
+
+                <button onclick="exportDataToJson()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 把目前資料同步到雲端 (下載備份)
+                </button>
+
+                <button onclick="document.getElementById('jsonFileInput').click()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> 從雲端載回資料 (讀取備份)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal Dialog -->
+    <div id="customModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#fffaf0] border border-[#e2d5c3] rounded-3xl p-6 max-w-sm w-full card-shadow animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl bg-[#f0e6d6] border border-[#e2d5c3] flex items-center justify-center text-lg">
+                    🧸
+                </div>
+                <h3 id="modalTitle" class="text-base font-bold text-[#614f39]">確認提示</h3>
+            </div>
+            <p id="modalMessage" class="text-xs sm:text-sm text-[#796348] mb-4 leading-relaxed">提示內容...</p>
+            
+            <div id="modalSingleInputContainer" class="mb-5 hidden">
+                <input type="number" id="modalInput" class="w-full px-4 py-2.5 bg-white border border-[#e2d5c3] rounded-2xl text-[#614f39] focus:outline-none focus:border-[#b09978] font-bold text-base" placeholder="請輸入金額...">
+            </div>
+
+            <div id="modalWishlistInputsContainer" class="mb-5 hidden space-y-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-[#947c5d] mb-1">願望品名 / 項目名稱</label>
+                    <input type="text" id="modalWishName" class="w-full px-4 py-2 bg-white border border-[#e2d5c3] rounded-xl text-[#614f39] focus:outline-none focus:border-[#b09978] text-xs font-bold" placeholder="例如：日本東京五日遊">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-[#947c5d] mb-1">目標金額 ($)</label>
+                    <input type="number" id="modalWishTarget" class="w-full px-4 py-2 bg-white border border-[#e2d5c3] rounded-xl text-[#614f39] focus:outline-none focus:border-[#b09978] text-xs font-bold" placeholder="例如：35000">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2.5">
+                <button id="modalCancelBtn" onclick="closeCustomModal(false)" class="px-4 py-2 rounded-2xl border border-[#e2d5c3] text-[#796348] hover:bg-[#f7f4ee] text-xs font-bold transition-all">取消</button>
+                <button id="modalConfirmBtn" onclick="closeCustomModal(true)" class="px-5 py-2 rounded-2xl bg-[#8c6d53] hover:bg-[#614f39] text-white text-xs font-bold transition-all shadow-xs">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-[#614f39] text-[#fffaf0] px-4 py-2.5 rounded-2xl shadow-lg border border-[#e2d5c3] flex items-center gap-2.5">
+            <span class="text-base">🧸</span>
+            <span id="toastMessage" class="text-xs font-bold">操作成功！</span>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        const fundsData = [
+            { id: 'fund1', name: '長期存款', bank: '玉山', monthly: 7000, target: 84000, months: 12, icon: 'fa-landmark' },
+            { id: 'fund2', name: '緊急備用金', bank: '台新', monthly: 2500, target: 30000, months: 12, icon: 'fa-shield-halved' },
+            { id: 'fund3', name: '獨立基金', bank: '中信', monthly: 2000, target: 24000, months: 12, icon: 'fa-seedling' },
+            { id: 'fund4', name: '旅遊基金', bank: '郵局', monthly: 2000, target: 24000, months: 12, icon: 'fa-plane-departure' },
+            { id: 'fund5', name: '美業基金', bank: '富邦', monthly: 1500, target: 18000, months: 12, icon: 'fa-wand-magic-sparkles' },
+            { id: 'fund6', name: '快樂基金', bank: '國泰', monthly: 1000, target: 12000, months: 12, icon: 'fa-face-smile-beam' },
+            { id: 'fund7', name: '醫美基金', bank: '信封袋', monthly: 1000, target: 12000, months: 12, icon: 'fa-heart' },
+            { id: 'fund8', name: '零錢小金庫', bank: '存錢筒', monthly: 0, target: 0, isVariableStash: true, icon: 'fa-piggy-bank' },
+            { id: 'fund9', name: '所有存錢目標總金額', bank: '總金額', monthly: 0, target: 196000, isSummary: true, icon: 'fa-chart-pie' },
+            { id: 'fund10', name: '願望清單與AI鼓勵', bank: '願望清單', monthly: 0, target: 0, isWishlist: true, icon: 'fa-star' }
+        ];
+
+        let currentTab = 0;
+        let savedState = JSON.parse(localStorage.getItem('bear_savings_state_v8')) || {};
+        let wishlistData = JSON.parse(localStorage.getItem('bear_wishlist_v8')) || [
+            { id: 1, name: '日本東京賞櫻五日遊', target: 38000, saved: 15000, completed: false },
+            { id: 2, name: '質感平板電腦', target: 22000, saved: 22000, completed: true }
+        ];
+        let aiEncouragementCache = "";
+
+        // --- 備份與還原功能 ---
+        function exportDataToJson() {
+            // 打包存錢進度與願望清單
+            const exportData = {
+                savingsState: savedState,
+                wishlist: wishlistData,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const fileName = `BearSaving_Backup_${dateStr}.json`;
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('✅ 資料已成功備份下載！', 'success');
+        }
+
+        function loadDataFromJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+
+                    // 檢查格式是否正確包含我們的資料
+                    if (importedData.savingsState !== undefined && importedData.wishlist !== undefined) {
+                        // 覆蓋本地變數
+                        savedState = importedData.savingsState;
+                        wishlistData = importedData.wishlist;
+                        
+                        // 存入 LocalStorage
+                        localStorage.setItem('bear_savings_state_v8', JSON.stringify(savedState));
+                        localStorage.setItem('bear_wishlist_v8', JSON.stringify(wishlistData));
+                        
+                        // 重新渲染畫面
+                        updateHeaderTotals();
+                        renderApp();
+                        
+                        // 關閉側邊欄並通知
+                        toggleSettingsSidebar();
+                        showToast('☁️ 資料已成功從備份檔載回！', 'success');
+                    } else {
+                        showToast('❌ 檔案格式錯誤！找不到存錢紀錄。', 'error');
+                    }
+                } catch (error) {
+                    showToast('❌ 檔案格式錯誤！請確保上傳的是 .json 備份檔。', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            event.target.value = ''; // 清空欄位以便下次選擇同一個檔案
+        }
+        // ------------------------
+
+        function toggleSettingsSidebar() {
+            const sidebar = document.getElementById('settingsSidebar');
+            const overlay = document.getElementById('settingsSidebarOverlay');
+            
+            if (sidebar.classList.contains('translate-x-full')) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    sidebar.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                overlay.classList.add('opacity-0');
+                sidebar.classList.add('translate-x-full');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function mockCloudAction(message) {
+            showToast(message, 'info');
+        }
+
+        function playDepositSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, now); // B5
+                osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } catch (e) {
+                console.log('Audio not supported', e);
+            }
+        }
+
+        let modalResolveCallback = null;
+        function showCustomModal(title, message, mode = 'none', defaultVal = '', defaultName = '', defaultTarget = '') {
+            return new Promise((resolve) => {
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalMessage').innerText = message;
+                
+                const singleInputContainer = document.getElementById('modalSingleInputContainer');
+                const wishlistInputsContainer = document.getElementById('modalWishlistInputsContainer');
+                
+                singleInputContainer.classList.add('hidden');
+                wishlistInputsContainer.classList.add('hidden');
+
+                if (mode === 'single') {
+                    singleInputContainer.classList.remove('hidden');
+                    document.getElementById('modalInput').value = defaultVal;
+                    setTimeout(() => document.getElementById('modalInput').focus(), 100);
+                } else if (mode === 'wishlist') {
+                    wishlistInputsContainer.classList.remove('hidden');
+                    document.getElementById('modalWishName').value = defaultName;
+                    document.getElementById('modalWishTarget').value = defaultTarget;
+                    setTimeout(() => document.getElementById('modalWishName').focus(), 100);
+                }
+
+                document.getElementById('customModal').classList.remove('hidden');
+                modalResolveCallback = resolve;
+            });
+        }
+
+        function closeCustomModal(result) {
+            document.getElementById('customModal').classList.add('hidden');
+            if (modalResolveCallback) {
+                if (result) {
+                    const singleContainer = document.getElementById('modalSingleInputContainer');
+                    const wishlistContainer = document.getElementById('modalWishlistInputsContainer');
+                    
+                    if (!singleContainer.classList.contains('hidden')) {
+                        const val = parseFloat(document.getElementById('modalInput').value);
+                        modalResolveCallback(isNaN(val) ? 0 : val);
+                    } else if (!wishlistContainer.classList.contains('hidden')) {
+                        const name = document.getElementById('modalWishName').value.trim();
+                        const target = parseFloat(document.getElementById('modalWishTarget').value);
+                        modalResolveCallback({ name, target: isNaN(target) ? 0 : target });
+                    } else {
+                        modalResolveCallback(true);
+                    }
+                } else {
+                    modalResolveCallback(false);
+                }
+                modalResolveCallback = null;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function saveAppData() {
+            localStorage.setItem('bear_savings_state_v8', JSON.stringify(savedState));
+            localStorage.setItem('bear_wishlist_v8', JSON.stringify(wishlistData));
+            updateHeaderTotals();
+        }
+
+        function updateHeaderTotals() {
+            let totalSaved = 0;
+            let totalTarget = 196000;
+
+            fundsData.forEach((fund) => {
+                if (fund.isSummary || fund.isWishlist) return;
+                const fundState = savedState[fund.id] || {};
+                if (fund.isVariableStash) {
+                    const records = fundState.records || [];
+                    records.forEach(r => totalSaved += r.amount);
+                } else {
+                    for (let i = 1; i <= fund.months; i++) {
+                        if (fundState[i] && typeof fundState[i] === 'number') {
+                            totalSaved += fundState[i];
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('headerTotalAmount').innerText = '$' + totalSaved.toLocaleString();
+            const percent = Math.min(100, Math.round((totalSaved / totalTarget) * 100));
+            document.getElementById('headerTotalPercent').innerText = percent + '%';
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabsContainer');
+            let html = '';
+            fundsData.forEach((fund, index) => {
+                const isActive = currentTab === index;
+                const activeClass = isActive 
+                    ? 'bg-[#8c6d53] text-white shadow-sm font-bold border-[#8c6d53]' 
+                    : 'bg-[#f7f4ee] text-[#796348] hover:bg-[#f0e6d6] border-[#e2d5c3] font-medium';
+
+                html += `
+                    <button onclick="switchTab(${index})" class="px-3.5 py-2 rounded-2xl border text-xs sm:text-sm transition-all flex items-center gap-1.5 whitespace-nowrap ${activeClass}">
+                        <i class="fa-solid ${fund.icon}"></i>
+                        <span>${fund.bank}</span>
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function switchTab(index) {
+            currentTab = index;
+            renderTabs();
+            renderApp();
+        }
+
+        function getFundStats(fundIndex) {
+            const fund = fundsData[fundIndex];
+            const fundState = savedState[fund.id] || {};
+            let currentAmount = 0;
+
+            for (let i = 1; i <= fund.months; i++) {
+                if (fundState[i] && typeof fundState[i] === 'number') {
+                    currentAmount += fundState[i];
+                }
+            }
+            const target = fund.target;
+            const percentage = Math.min(100, Math.round((currentAmount / target) * 100));
+            const remaining = Math.max(0, target - currentAmount);
+            return { currentAmount, target, percentage, remaining };
+        }
+
+        async function quickDeposit(fundId, monthIndex, defaultMonthly) {
+            const fundState = savedState[fundId] || {};
+            const currentVal = fundState[monthIndex];
+
+            if (currentVal && currentVal > 0) {
+                const confirmed = await showCustomModal('取消存款確認', `第 ${monthIndex} 個月目前已存入 $${currentVal.toLocaleString()}。請問是否要取消此筆存款紀錄？`, 'none');
+                if (confirmed) {
+                    delete fundState[monthIndex];
+                    savedState[fundId] = fundState;
+                    saveAppData();
+                    renderApp();
+                    showToast('已取消該月份存款紀錄', 'info');
+                }
+            } else {
+                fundState[monthIndex] = defaultMonthly;
+                savedState[fundId] = fundState;
+                saveAppData();
+                playDepositSound();
+                renderApp();
+                showToast(`成功記錄第 ${monthIndex} 個月存款 $${defaultMonthly.toLocaleString()}！ 🧸✨`, 'success');
+            }
+        }
+
+        async function manualDeposit(fundId, monthIndex) {
+            const fund = fundsData.find(f => f.id === fundId);
+            const fundState = savedState[fundId] || {};
+            const currentVal = fundState[monthIndex] || fund.monthly;
+
+            const val = await showCustomModal('手動輸入存入金額', `請輸入第 ${monthIndex} 個月實際存入 ${fund.bank} 的金額 ($)：`, 'single', currentVal);
+            if (val !== false && !isNaN(val) && val > 0) {
+                fundState[monthIndex] = val;
+                savedState[fundId] = fundState;
+                saveAppData();
+                playDepositSound();
+                renderApp();
+                showToast(`成功手動存入第 ${monthIndex} 個月金額 $${val.toLocaleString()}！ 💰✨`, 'success');
+            }
+        }
+
+        async function addStashRecord() {
+            const amount = await showCustomModal('零錢小金庫存入', '請輸入本次隨機存入的金額 ($)：', 'single', 100);
+            if (amount === false || isNaN(amount) || amount <= 0) return;
+
+            const noteRes = await showCustomModal('備註說明', '請輸入這筆存錢的備註（例如：發票中獎、零錢投遞）：', 'single', '');
+            
+            const fundId = 'fund8';
+            const fundState = savedState[fundId] || { records: [] };
+            if (!fundState.records) fundState.records = [];
+            
+            fundState.records.push({
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                amount: amount,
+                note: noteRes || '隨機零錢存入'
+            });
+
+            savedState[fundId] = fundState;
+            saveAppData();
+            playDepositSound();
+            renderApp();
+            showToast(`成功存入小金庫 $${amount.toLocaleString()}！ 🧸✨`, 'success');
+        }
+
+        async function deleteStashRecord(recordId) {
+            const confirmed = await showCustomModal('刪除紀錄', '確定要刪除這筆零錢紀錄嗎？', 'none');
+            if (confirmed) {
+                const fundId = 'fund8';
+                const fundState = savedState[fundId] || { records: [] };
+                fundState.records = fundState.records.filter(r => r.id !== recordId);
+                savedState[fundId] = fundState;
+                saveAppData();
+                renderApp();
+                showToast('已刪除該筆紀錄', 'info');
+            }
+        }
+
+        async function addWishlistItem() {
+            const res = await showCustomModal('新增願望清單', '請填寫您的心願品名與目標金額：', 'wishlist', '', '', '');
+            if (res && res.name && res.target > 0) {
+                wishlistData.push({ id: Date.now(), name: res.name, target: res.target, saved: 0, completed: false });
+                saveAppData();
+                renderApp();
+                showToast('已成功新增願望！ ✨', 'success');
+            } else if (res !== false) {
+                showToast('請填寫完整的品名與目標金額喔！', 'error');
+            }
+        }
+
+        function toggleWishlistItem(id) {
+            const item = wishlistData.find(w => w.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                if (item.completed) item.saved = item.target;
+                saveAppData();
+                renderApp();
+            }
+        }
+
+        async function deleteWishlistItem(id) {
+            const confirmed = await showCustomModal('刪除心願', '確定要移除這個願望嗎？', 'none');
+            if (confirmed) {
+                wishlistData = wishlistData.filter(w => w.id !== id);
+                saveAppData();
+                renderApp();
+                showToast('已移除願望', 'info');
+            }
+        }
+
+        async function fetchAIEncouragement() {
+            const container = document.getElementById('aiEncouragementText');
+            container.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> 熊熊正在為您生成溫暖的鼓勵語中... 🧸`;
+            
+            try {
+                let totalSaved = 0;
+                fundsData.forEach(f => {
+                    if (f.isSummary || f.isWishlist) return;
+                    const st = savedState[f.id] || {};
+                    if (f.isVariableStash) {
+                        (st.records || []).forEach(r => totalSaved += r.amount);
+                    } else {
+                        for (let i = 1; i <= f.months; i++) {
+                            if (st[i] && typeof st[i] === 'number') totalSaved += st[i];
+                        }
+                    }
+                });
+
+                const systemPrompt = "你是一位溫柔可愛的奶茶色熊熊理財小幫手，請用充滿鼓勵、溫馨且帶有可愛表情符號（如 🧸、✨、🤎）的語氣，給使用者一段客製化的存錢鼓勵與暖心稱讚。";
+                const userQuery = `使用者目前總共已經存下了 $${totalSaved.toLocaleString()} 元。請給他一段溫暖的打氣與稱讚，字數約 80-120 字。`;
+                
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    aiEncouragementCache = candidate.content.parts[0].text;
+                    container.innerHTML = `<p class="leading-relaxed text-[#614f39]">${aiEncouragementCache}</p>`;
+                } else {
+                    container.innerHTML = `<p class="text-[#614f39]">「每一步小小的累積，都是邁向理想生活最堅實的步伐！熊熊永遠在旁邊陪著你喔！🧸✨」</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p class="text-[#614f39]">「存錢是一場跟自己的溫柔賽跑，你已經做得超級棒囉！繼續加油！🤎」</p>`;
+            }
+        }
+
+        function renderApp() {
+            const container = document.getElementById('appContainer');
+            const fund = fundsData[currentTab];
+
+            if (!fund.isVariableStash && !fund.isSummary && !fund.isWishlist) {
+                const stats = getFundStats(currentTab);
+                const fundState = savedState[fund.id] || {};
+
+                let html = `
+                    <div class="bg-[#fffaf0] border border-[#e2d5c3] rounded-3xl p-5 sm:p-8 card-shadow relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 text-8xl text-[#f7f4ee] select-none pointer-events-none z-0">🧸</div>
+                        
+                        <div class="relative z-10">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-[#e2d5c3] pb-4">
+                                <div>
+                                    <div class="flex items-center space-x-2 text-[11px] font-semibold text-[#947c5d] uppercase tracking-wider mb-1">
+                                        <span class="px-2 py-0.5 bg-[#f7f4ee] rounded-full border border-[#e2d5c3]">存入銀行: ${fund.bank}</span>
+                                        <span>目標項目: ${fund.name}</span>
+                                    </div>
+                                    <h2 class="text-xl sm:text-2xl font-bold text-[#614f39] flex items-center gap-2">
+                                        <i class="fa-solid ${fund.icon} text-[#b09978]"></i> ${fund.name} (${fund.bank})
+                                    </h2>
+                                </div>
+                                <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-3 flex items-center gap-3 w-full sm:w-auto justify-between">
+                                    <div>
+                                        <p class="text-[10px] text-[#947c5d]">預定每月目標</p>
+                                        <p class="text-sm sm:text-base font-bold text-[#614f39]">$${fund.monthly.toLocaleString()}</p>
+                                    </div>
+                                    <div class="h-6 w-px bg-[#e2d5c3]"></div>
+                                    <div>
+                                        <p class="text-[10px] text-[#947c5d]">總目標</p>
+                                        <p class="text-sm sm:text-base font-bold text-[#614f39]">$${fund.target.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-4 mb-5 flex flex-col md:flex-row items-center justify-between gap-3">
+                                <div class="w-full md:w-2/3">
+                                    <div class="flex justify-between text-xs mb-1 font-medium text-[#796348]">
+                                        <span>已存金額: <strong class="text-[#614f39]">$${stats.currentAmount.toLocaleString()}</strong></span>
+                                        <span>達成率: <strong class="text-[#614f39]">${stats.percentage}%</strong></span>
+                                    </div>
+                                    <div class="w-full bg-[#e2d5c3]/50 h-3 rounded-full overflow-hidden p-0.5 border border-[#e2d5c3]">
+                                        <div class="bg-[#b09978] h-full rounded-full transition-all duration-500" style="width: ${stats.percentage}%"></div>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-auto text-center md:text-right">
+                                    <div class="text-[10px] text-[#947c5d] mb-0.5">💡 距離目標提示</div>
+                                    <div class="text-xs sm:text-sm font-bold text-[#796348]">
+                                        ${stats.remaining > 0 ? `還差 <span class="text-[#614f39]">$${stats.remaining.toLocaleString()}</span> 就達標囉！繼續加油！` : '🎉 太棒了！此項目已完美達標！'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+                `;
+
+                for (let i = 1; i <= fund.months; i++) {
+                    const monthData = fundState[i];
+                    const savedAmount = (monthData && typeof monthData === 'number') ? monthData : 0;
+                    const hasSaved = savedAmount > 0;
+                    const cardBgClass = hasSaved ? 'bg-[#f0e6d6] border-[#b09978] shadow-xs' : 'bg-white border-[#e2d5c3] hover:border-[#b09978]';
+
+                    html += `
+                        <div class="border rounded-2xl p-3.5 flex flex-col justify-between transition-all ${cardBgClass}">
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span class="font-bold text-[#796348] text-xs">第 ${i} 個月</span>
+                                    <span class="text-[10px] text-[#947c5d]">預定 $${fund.monthly.toLocaleString()}</span>
+                                </div>
+                                <div class="my-1.5">
+                                    <p class="text-[10px] text-[#947c5d]">實際存入金額</p>
+                                    <p class="text-base font-extrabold ${hasSaved ? 'text-[#614f39]' : 'text-[#cbb79d]'}">
+                                        ${hasSaved ? '$' + savedAmount.toLocaleString() : '$0'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="pt-2.5 border-t border-[#e2d5c3]/50 flex gap-1.5">
+                                <button onclick="quickDeposit('${fund.id}', ${i}, ${fund.monthly})" class="flex-1 py-1.5 px-2 bg-[#b09978] hover:bg-[#947c5d] text-white rounded-xl text-[11px] font-bold transition-all shadow-xs truncate" title="點擊存預定金額，再次點擊可取消">
+                                    ${hasSaved ? '已存 (點擊取消)' : '存預定金額'}
+                                </button>
+                                <button onclick="manualDeposit('${fund.id}', ${i})" class="py-1.5 px-2.5 bg-[#8c6d53] hover:bg-[#614f39] text-white rounded-xl text-[11px] font-bold transition-all shadow-xs" title="手動輸入金額">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+
+            } 
+            else if (fund.isVariableStash) {
+                const fundState = savedState[fund.id] || { records: [] };
+                const records = fundState.records || [];
+                let totalSaved = 0;
+                records.forEach(r => totalSaved += r.amount);
+
+                let html = `
+                    <div class="bg-[#fffaf0] border border-[#e2d5c3] rounded-3xl p-5 sm:p-8 card-shadow relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 text-8xl text-[#f7f4ee] select-none pointer-events-none z-0">🧸</div>
+                        <div class="relative z-10">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-[#e2d5c3] pb-4">
+                                <div>
+                                    <div class="flex items-center space-x-2 text-[11px] font-semibold text-[#947c5d] uppercase tracking-wider mb-1">
+                                        <span class="px-2 py-0.5 bg-[#f7f4ee] rounded-full border border-[#e2d5c3]">存入位置: 存錢筒</span>
+                                        <span>項目: 零錢小金庫</span>
+                                    </div>
+                                    <h2 class="text-xl sm:text-2xl font-bold text-[#614f39] flex items-center gap-2">
+                                        <i class="fa-solid ${fund.icon} text-[#b09978]"></i> ${fund.name} (存錢筒)
+                                    </h2>
+                                </div>
+                                <button onclick="addStashRecord()" class="px-4 py-2.5 bg-[#8c6d53] hover:bg-[#614f39] text-white rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2">
+                                    <i class="fa-solid fa-plus-circle"></i> 隨時存入金額
+                                </button>
+                            </div>
+
+                            <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-5 mb-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-[10px] text-[#947c5d]">零錢小金庫累積總額</p>
+                                    <p class="text-2xl sm:text-3xl font-black text-[#614f39]">$${totalSaved.toLocaleString()}</p>
+                                </div>
+                                <div class="text-left sm:text-right">
+                                    <p class="text-[10px] text-[#947c5d]">💡 小提示</p>
+                                    <p class="text-xs sm:text-sm font-bold text-[#796348]">隨時隨地，想存就存，不限每月，隨機填入任意金額！</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                `;
+
+                if (records.length === 0) {
+                    html += `
+                        <div class="col-span-full py-10 text-center text-[#947c5d] bg-white border border-[#e2d5c3] rounded-2xl">
+                            <p class="text-sm font-bold mb-1">目前還沒有零錢紀錄喔！</p>
+                            <p class="text-xs">點擊上方按鈕開始隨時存入第一筆金額吧 ✨</p>
+                        </div>
+                    `;
+                } else {
+                    records.slice().reverse().forEach(record => {
+                        html += `
+                            <div class="bg-white border border-[#e2d5c3] rounded-2xl p-3.5 flex flex-col justify-between shadow-xs">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <span class="text-[11px] text-[#947c5d]">${record.date}</span>
+                                        <button onclick="deleteStashRecord(${record.id})" class="text-[#b09978] hover:text-red-500 text-xs" title="刪除紀錄">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-lg font-black text-[#614f39] mb-1">+$${record.amount.toLocaleString()}</p>
+                                    <p class="text-[11px] text-[#796348] bg-[#f7f4ee] px-2 py-0.5 rounded-lg inline-block border border-[#e2d5c3]">${record.note}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+
+            } 
+            else if (fund.isSummary) {
+                let totalSaved = 0;
+                let totalTarget = 196000;
+                let detailsHtml = '';
+
+                fundsData.forEach((f) => {
+                    if (f.isSummary || f.isWishlist) return;
+                    let currentAmt = 0;
+                    const st = savedState[f.id] || {};
+                    if (f.isVariableStash) {
+                        (st.records || []).forEach(r => currentAmt += r.amount);
+                    } else {
+                        for (let i = 1; i <= f.months; i++) {
+                            if (st[i] && typeof st[i] === 'number') currentAmt += st[i];
+                        }
+                    }
+                    totalSaved += currentAmt;
+                    const pct = f.target > 0 ? Math.min(100, Math.round((currentAmt / f.target) * 100)) : 100;
+
+                    detailsHtml += `
+                        <div class="bg-white border border-[#e2d5c3] rounded-2xl p-3.5 flex flex-col justify-between shadow-xs">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="font-bold text-[#614f39] text-xs flex items-center gap-1.5">
+                                    <i class="fa-solid ${f.icon} text-[#b09978]"></i> ${f.name}
+                                </span>
+                                <span class="text-[10px] px-2 py-0.5 bg-[#f7f4ee] rounded-full border border-[#e2d5c3] text-[#796348]">${f.bank}</span>
+                            </div>
+                            <div class="my-1.5">
+                                <div class="flex justify-between text-[11px] text-[#947c5d] mb-1">
+                                    <span>已存: <strong class="text-[#614f39]">$${currentAmt.toLocaleString()}</strong></span>
+                                    <span>${f.target > 0 ? '目標: $' + f.target.toLocaleString() : '彈性目標'}</span>
+                                </div>
+                                ${f.target > 0 ? `
+                                    <div class="w-full bg-[#e2d5c3]/50 h-2 rounded-full overflow-hidden border border-[#e2d5c3]">
+                                        <div class="bg-[#b09978] h-full rounded-full" style="width: ${pct}%"></div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const totalPercentage = Math.min(100, Math.round((totalSaved / totalTarget) * 100));
+
+                container.innerHTML = `
+                    <div class="bg-[#fffaf0] border border-[#e2d5c3] rounded-3xl p-5 sm:p-8 card-shadow relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 text-8xl text-[#f7f4ee] select-none pointer-events-none z-0">🧸</div>
+                        <div class="relative z-10">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-[#e2d5c3] pb-4">
+                                <div>
+                                    <div class="flex items-center space-x-2 text-[11px] font-semibold text-[#947c5d] uppercase tracking-wider mb-1">
+                                        <span class="px-2 py-0.5 bg-[#f7f4ee] rounded-full border border-[#e2d5c3]">第九頁</span>
+                                        <span>總金額儀表板</span>
+                                    </div>
+                                    <h2 class="text-xl sm:text-2xl font-bold text-[#614f39] flex items-center gap-2">
+                                        <i class="fa-solid ${fund.icon} text-[#b09978]"></i> ${fund.name}
+                                    </h2>
+                                </div>
+                            </div>
+
+                            <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between gap-5">
+                                <div class="w-full md:w-1/2">
+                                    <p class="text-[10px] text-[#947c5d] mb-1">所有存錢目標總累積</p>
+                                    <p class="text-3xl sm:text-4xl font-black text-[#614f39] mb-2.5">$${totalSaved.toLocaleString()}</p>
+                                    <div class="flex justify-between text-xs text-[#796348] mb-1">
+                                        <span>總體達成進度</span>
+                                        <strong class="text-[#614f39]">${totalPercentage}%</strong>
+                                    </div>
+                                    <div class="w-full bg-[#e2d5c3]/50 h-3.5 rounded-full overflow-hidden p-0.5 border border-[#e2d5c3]">
+                                        <div class="bg-[#b09978] h-full rounded-full transition-all duration-500" style="width: ${totalPercentage}%"></div>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-1/2 bg-white border border-[#e2d5c3] rounded-2xl p-4 text-center">
+                                    <p class="text-[10px] text-[#947c5d] mb-1">🧸 熊熊溫馨小總結</p>
+                                    <p class="text-xs sm:text-sm font-bold text-[#796348] leading-relaxed">
+                                        ${totalSaved >= totalTarget ? '🎉 太神啦！所有存錢計畫已經全數完美達標！' : `距離所有計畫總目標還差 <span class="text-[#614f39] font-black">$${(totalTarget - totalSaved).toLocaleString()}</span>，繼續保持這股好節奏！`}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <h3 class="text-base font-bold text-[#614f39] mb-3">各項基金明細一覽</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                                ${detailsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (fund.isWishlist) {
+                let wishlistHtml = '';
+                wishlistData.forEach(item => {
+                    wishlistHtml += `
+                        <div class="bg-white border border-[#e2d5c3] rounded-2xl p-4 flex items-center justify-between shadow-xs gap-3">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="toggleWishlistItem(${item.id})" class="w-5 h-5 accent-[#b09978] rounded cursor-pointer shrink-0">
+                                <div class="overflow-hidden">
+                                    <p class="text-xs sm:text-sm font-bold truncate ${item.completed ? 'line-through text-[#b09978]' : 'text-[#614f39]'}">${item.name}</p>
+                                    <p class="text-[10px] text-[#947c5d]">目標金額: $${item.target.toLocaleString()}</p>
+                                </div>
+                            </div>
+                            <button onclick="deleteWishlistItem(${item.id})" class="text-[#b09978] hover:text-red-500 text-xs shrink-0 p-1" title="刪除心願">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div class="bg-[#fffaf0] border border-[#e2d5c3] rounded-3xl p-5 sm:p-8 card-shadow relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 text-8xl text-[#f7f4ee] select-none pointer-events-none z-0">🧸</div>
+                        <div class="relative z-10">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-[#e2d5c3] pb-4">
+                                <div>
+                                    <div class="flex items-center space-x-2 text-[11px] font-semibold text-[#947c5d] uppercase tracking-wider mb-1">
+                                        <span class="px-2 py-0.5 bg-[#f7f4ee] rounded-full border border-[#e2d5c3]">第十頁</span>
+                                        <span>願望清單與鼓勵</span>
+                                    </div>
+                                    <h2 class="text-xl sm:text-2xl font-bold text-[#614f39] flex items-center gap-2">
+                                        <i class="fa-solid ${fund.icon} text-[#b09978]"></i> ${fund.name}
+                                    </h2>
+                                </div>
+                                <button onclick="addWishlistItem()" class="px-4 py-2.5 bg-[#8c6d53] hover:bg-[#614f39] text-white rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2">
+                                    <i class="fa-solid fa-plus-circle"></i> 新增願望
+                                </button>
+                            </div>
+
+                            <div class="bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl p-4 sm:p-5 mb-6">
+                                <div class="flex items-center justify-between mb-2.5">
+                                    <h3 class="text-sm sm:text-base font-bold text-[#614f39] flex items-center gap-2">
+                                        <span>🧸 熊熊 AI 專屬小鼓勵</span>
+                                    </h3>
+                                    <button onclick="fetchAIEncouragement()" class="px-3 py-1.5 bg-[#b09978] hover:bg-[#947c5d] text-white rounded-xl text-[11px] font-bold transition-all shadow-xs flex items-center gap-1.5">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> 取得最新鼓勵
+                                    </button>
+                                </div>
+                                <div id="aiEncouragementText" class="text-xs sm:text-sm text-[#796348] bg-white border border-[#e2d5c3] rounded-xl p-3.5 leading-relaxed">
+                                    ${aiEncouragementCache || '點擊上方按鈕，讓熊熊 AI 根據您目前的存錢進度為您加油打氣喔！ ✨'}
+                                </div>
+                            </div>
+
+                            <h3 class="text-base font-bold text-[#614f39] mb-3">我的夢想清單 ✨</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                ${wishlistHtml || '<div class="col-span-full py-6 text-center text-[#947c5d] bg-white border border-[#e2d5c3] rounded-2xl text-xs">目前還沒有願望清單，趕快新增一個吧！</div>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        window.onload = function() {
+            renderTabs();
+            renderApp();
+            updateHeaderTotals();
+        };
+    </script>
+</body>
+</html>
