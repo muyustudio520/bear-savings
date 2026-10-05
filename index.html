@@ -6,11 +6,12 @@
     <title>奶茶色系熊熊存錢計畫</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -129,43 +130,33 @@
                 <p class="text-base font-black text-[#614f39]" id="cloudStatusText">尚未登入，可使用本地備份</p>
             </div>
 
-            <!-- 登入表單 -->
-            <div class="space-y-4 text-left mb-6">
-                <div>
-                    <label class="block text-xs font-bold text-[#796348] mb-1">Email</label>
-                    <input type="email" id="cloudEmail" class="w-full px-4 py-3 bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl text-[#614f39] focus:outline-none focus:border-[#b09978] focus:bg-white text-sm transition-colors" placeholder="請輸入 Email">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-[#796348] mb-1">密碼</label>
-                    <input type="password" id="cloudPassword" class="w-full px-4 py-3 bg-[#f7f4ee] border border-[#e2d5c3] rounded-2xl text-[#614f39] focus:outline-none focus:border-[#b09978] focus:bg-white text-sm transition-colors" placeholder="請輸入密碼 (至少 6 碼)">
-                </div>
-                
-                <div>
-                    <button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f0e6d6] hover:bg-[#e2d5c3] border border-[#d4c5b9] rounded-xl text-[11px] font-bold text-[#796348] transition-colors shadow-xs" onclick="mockCloudAction('忘記密碼功能尚未實作')">
-                        <i class="fa-solid fa-key text-[10px]"></i> 忘記密碼？
-                    </button>
-                    <p class="text-[10px] text-[#b09978] mt-2 leading-relaxed">
-                        如果忘記密碼，先輸入註冊信箱，再按「忘記密碼？」系統會寄重設信到信箱。
-                    </p>
+            <!-- Google Drive 雲端同步 -->
+            <div class="space-y-3">
+                <button onclick="googleDriveLogin()" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-google"></i> 使用 Google 帳號登入
+                </button>
+
+                <button onclick="saveToGoogleDrive()" class="w-full py-3.5 bg-white border-2 border-[#8c6d53] text-[#8c6d53] hover:bg-[#fcf9f2] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 同步目前資料到 Google Drive
+                </button>
+
+                <button onclick="loadFromGoogleDrive()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> 從 Google Drive 載回資料
+                </button>
+
+                <div class="pt-3 mt-2 border-t border-[#e2d5c3]">
+                    <p class="text-[10px] text-[#947c5d] mb-3 text-left leading-relaxed">Google Drive 為主要雲端備份；下方保留 JSON 備份，方便額外留存。</p>
+                    <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="loadDataFromJson(event)">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportDataToJson()" class="py-3 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-xs shadow-sm transition-all">
+                            <i class="fa-solid fa-download mr-1"></i> 下載備份
+                        </button>
+                        <button onclick="document.getElementById('jsonFileInput').click()" class="py-3 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-xs shadow-sm transition-all">
+                            <i class="fa-solid fa-upload mr-1"></i> 讀取備份
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <!-- 操作按鈕群 -->
-            <div class="space-y-3">
-               <button onclick="googleDriveLogin()" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold">
-    <i class="fa-brands fa-google mr-2"></i> 使用 Google 帳號登入
-</button>
-                
-                <!-- 新增的隱藏檔案輸入框 -->
-                <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="loadDataFromJson(event)">
-
-                <button onclick="exportDataToJson()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> 把目前資料同步到雲端 (下載備份)
-                </button>
-
-                <button onclick="document.getElementById('jsonFileInput').click()" class="w-full py-3.5 bg-white border border-[#d4c5b9] text-[#796348] hover:bg-[#f7f4ee] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> 從雲端載回資料 (讀取備份)
-                </button>
             </div>
         </div>
     </div>
@@ -317,33 +308,128 @@
             }
         }
 
-        function mockCloudAction(message) {
-            showToast(message, 'info');
+        // --- Google Drive 雲端同步 ---
+        const GOOGLE_CLIENT_ID = '984233136356-tidh1hr3nbbi3f85fegj2jkm9iophcp2.apps.googleusercontent.com';
+        const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+        const GOOGLE_DRIVE_FILE_NAME = 'BearSaving_Data.json';
+        let googleAccessToken = '';
+        let googleTokenClient = null;
+
+        function setCloudStatus(text) {
+            const el = document.getElementById('cloudStatusText');
+            if (el) el.textContent = text;
         }
-// Google 登入
-googleDriveLogin() {
-    const client = google.accounts.oauth2.initTokenClient({
-        client_id: '984233136356-tidh1hr3nbbi3f85fegj2jkm9iophcp2.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/drive.file',
-        callback: (response) => {
-            if (response.error) {
-                Toast('Google 登入失敗，請再試一次', 'error');
-                return;
-            }
 
-            this.googleAccessToken = response.access_token;
-
-            const statusText = document.getElementById('cloudStatusText');
-            if (statusText) {
-                statusText.textContent = 'Google 帳號已連線，可使用雲端同步';
-            }
-
-            Toast('Google 帳號登入成功！', 'success');
+        function getGoogleToken() {
+            return new Promise((resolve, reject) => {
+                if (!window.google?.accounts?.oauth2) {
+                    reject(new Error('Google 登入服務尚未載入，請重新整理後再試。'));
+                    return;
+                }
+                if (!googleTokenClient) {
+                    googleTokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: GOOGLE_CLIENT_ID,
+                        scope: GOOGLE_DRIVE_SCOPE,
+                        callback: () => {}
+                    });
+                }
+                googleTokenClient.callback = (response) => {
+                    if (response.error || !response.access_token) {
+                        reject(new Error(response.error || 'Google 登入失敗'));
+                        return;
+                    }
+                    googleAccessToken = response.access_token;
+                    resolve(googleAccessToken);
+                };
+                googleTokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
+            });
         }
-    });
 
-    client.requestAccessToken();
-}
+        async function googleDriveLogin() {
+            try {
+                setCloudStatus('正在連接 Google 帳號…');
+                await getGoogleToken();
+                setCloudStatus('Google 帳號已連線，可使用雲端同步');
+                showToast('✅ Google 帳號登入成功！', 'success');
+            } catch (err) {
+                setCloudStatus('尚未登入，可使用本地備份');
+                showToast('❌ ' + err.message, 'error');
+            }
+        }
+
+        function buildCloudData() {
+            return {
+                savingsState: savedState,
+                wishlist: wishlistData,
+                exportDate: new Date().toISOString(),
+                app: 'Bear.saving'
+            };
+        }
+
+        async function findDriveBackup(token) {
+            const q = `name='${GOOGLE_DRIVE_FILE_NAME}' and trashed=false`;
+            const url = 'https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent(q) + '&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc&pageSize=10';
+            const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+            if (!res.ok) throw new Error('無法讀取 Google Drive 檔案清單');
+            const data = await res.json();
+            return data.files?.[0] || null;
+        }
+
+        async function saveToGoogleDrive() {
+            try {
+                setCloudStatus('正在同步到 Google Drive…');
+                const token = googleAccessToken || await getGoogleToken();
+                const existing = await findDriveBackup(token);
+                const metadata = { name: GOOGLE_DRIVE_FILE_NAME, mimeType: 'application/json' };
+                const boundary = 'bear_saving_' + Date.now();
+                const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(buildCloudData(), null, 2)}\r\n--${boundary}--`;
+                const url = existing
+                    ? `https://www.googleapis.com/upload/drive/v3/files/${existing.id}?uploadType=multipart`
+                    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+                const res = await fetch(url, {
+                    method: existing ? 'PATCH' : 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': `multipart/related; boundary=${boundary}`
+                    },
+                    body
+                });
+                if (!res.ok) throw new Error('Google Drive 同步失敗');
+                setCloudStatus('已同步至 Google Drive');
+                showToast('☁️ 資料已同步到 Google Drive！', 'success');
+            } catch (err) {
+                showToast('❌ ' + err.message, 'error');
+            }
+        }
+
+        async function loadFromGoogleDrive() {
+            try {
+                setCloudStatus('正在從 Google Drive 載入…');
+                const token = googleAccessToken || await getGoogleToken();
+                const file = await findDriveBackup(token);
+                if (!file) throw new Error('Google Drive 中還沒有 Bear.saving 備份');
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+                    headers: { Authorization: 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('無法下載 Google Drive 備份');
+                const importedData = await res.json();
+                if (importedData.savingsState === undefined || importedData.wishlist === undefined) {
+                    throw new Error('Google Drive 備份格式不正確');
+                }
+                savedState = importedData.savingsState;
+                wishlistData = importedData.wishlist;
+                localStorage.setItem('bear_savings_state_v8', JSON.stringify(savedState));
+                localStorage.setItem('bear_wishlist_v8', JSON.stringify(wishlistData));
+                updateHeaderTotals();
+                renderApp();
+                setCloudStatus('已從 Google Drive 載入最新資料');
+                showToast('☁️ Google Drive 資料載入成功！', 'success');
+            } catch (err) {
+                showToast('❌ ' + err.message, 'error');
+            }
+        }
+        // ------------------------
+
         function playDepositSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
