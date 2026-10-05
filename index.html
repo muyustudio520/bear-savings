@@ -100,7 +100,7 @@
 
     <!-- Footer -->
     <footer class="bg-[#f7f4ee] border-t border-[#e2d5c3] py-4 text-center text-xs text-[#947c5d]">
-        <p>🧸 奶茶色系熊熊存錢計畫 &copy; 2026 | 慢慢存，走向理想生活 ✨</p>
+        <p>🧸 好好存錢，也要好好生活 ✨</p>
     </footer>
 
     <div id="settingsSidebarOverlay" onclick="toggleSettingsSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 hidden transition-opacity opacity-0"></div>
@@ -108,7 +108,7 @@
         <!-- 側邊欄標頭 -->
         <div class="sticky top-0 bg-[#f7f4ee] border-b border-[#e2d5c3] px-6 py-4 flex items-center justify-between z-10">
             <h2 class="text-xl font-black text-[#614f39] flex items-center gap-2">
-                <i class="fa-solid fa-cloud text-[#b09978]"></i> Little Bear Savingss 雲端
+                <i class="fa-solid fa-cloud text-[#b09978]"></i> Little Bear Savings 雲端
             </h2>
             <button onclick="toggleSettingsSidebar()" class="w-8 h-8 rounded-full bg-white border border-[#e2d5c3] flex items-center justify-center text-[#796348] hover:bg-[#e2d5c3] transition-colors">
                 <i class="fa-solid fa-xmark"></i>
@@ -117,7 +117,7 @@
         
         <!-- 側邊欄內容 -->
         <div class="p-6 flex-1 text-center">
-            <h3 class="text-2xl font-serif font-black text-[#796348] mb-2 tracking-wide">Little Bear Savingss</h3>
+            <h3 class="text-2xl font-serif font-black text-[#796348] mb-2 tracking-wide">Little Bear Savings</h3>
             <p class="text-xs text-[#947c5d] mb-6">不只是財務工具，這裡是一個接住你財務焦慮的地方</p>
             
             <div class="inline-block bg-[#f0e6d6] rounded-full px-4 py-1 text-[10px] font-bold text-[#796348] border border-[#e2d5c3] mb-8 shadow-xs">
@@ -392,7 +392,7 @@ function getLifetimeTotal() {
                 wishlist: wishlistData,
                 lifetimeBase: lifetimeBase,
                 exportDate: new Date().toISOString(),
-                app: 'Little Bear Savingss'
+                app: 'Little Bear Savings'
             };
         }
 
@@ -437,7 +437,7 @@ function getLifetimeTotal() {
                 setCloudStatus('正在從 Google Drive 載入…');
                 const token = googleAccessToken || await getGoogleToken();
                 const file = await findDriveBackup(token);
-                if (!file) throw new Error('Google Drive 中還沒有 Little Bear Savingss 備份');
+                if (!file) throw new Error('Google Drive 中還沒有 Little Bear Savings 備份');
                 const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
                     headers: { Authorization: 'Bearer ' + token }
                 });
@@ -503,10 +503,13 @@ function getLifetimeTotal() {
                 singleInputContainer.classList.add('hidden');
                 wishlistInputsContainer.classList.add('hidden');
 
-                if (mode === 'single') {
+                if (mode === 'single' || mode === 'text') {
                     singleInputContainer.classList.remove('hidden');
-                    document.getElementById('modalInput').value = defaultVal;
-                    setTimeout(() => document.getElementById('modalInput').focus(), 100);
+                    const modalInput = document.getElementById('modalInput');
+                    modalInput.type = mode === 'text' ? 'text' : 'number';
+                    modalInput.placeholder = mode === 'text' ? '請輸入備註...' : '請輸入金額...';
+                    modalInput.value = defaultVal;
+                    setTimeout(() => modalInput.focus(), 100);
                 } else if (mode === 'wishlist') {
                     wishlistInputsContainer.classList.remove('hidden');
                     document.getElementById('modalWishName').value = defaultName;
@@ -527,8 +530,13 @@ function getLifetimeTotal() {
                     const wishlistContainer = document.getElementById('modalWishlistInputsContainer');
                     
                     if (!singleContainer.classList.contains('hidden')) {
-                        const val = parseFloat(document.getElementById('modalInput').value);
-                        modalResolveCallback(isNaN(val) ? 0 : val);
+                        const input = document.getElementById('modalInput');
+                        if (input.type === 'text') {
+                            modalResolveCallback(input.value.trim());
+                        } else {
+                            const val = parseFloat(input.value);
+                            modalResolveCallback(isNaN(val) ? 0 : val);
+                        }
                     } else if (!wishlistContainer.classList.contains('hidden')) {
                         const name = document.getElementById('modalWishName').value.trim();
                         const target = parseFloat(document.getElementById('modalWishTarget').value);
@@ -650,7 +658,7 @@ function getLifetimeTotal() {
             const amount = await showCustomModal('零錢小金庫存入', '請輸入本次隨機存入的金額 ($)：', 'single', 100);
             if (amount === false || isNaN(amount) || amount <= 0) return;
 
-            const noteRes = await showCustomModal('備註說明', '請輸入這筆存錢的備註（例如：發票中獎、零錢投遞）：', 'single', '');
+            const noteRes = await showCustomModal('備註說明', '請輸入這筆存錢的備註（例如：發票中獎、零錢投遞）：', 'text', '');
             
             const fundId = 'fund8';
             const fundState = savedState[fundId] || { records: [] };
