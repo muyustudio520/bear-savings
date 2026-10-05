@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -151,13 +152,9 @@
 
             <!-- 操作按鈕群 -->
             <div class="space-y-3">
-                <button onclick="mockCloudAction('註冊功能暫未開放，請先使用下方本地備份。')" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-user-plus"></i> 註冊雲端帳號
-                </button>
-                
-                <button onclick="mockCloudAction('登入功能暫未開放，請先使用下方本地備份。')" class="w-full py-3.5 bg-white border-2 border-[#8c6d53] text-[#8c6d53] hover:bg-[#fcf9f2] rounded-2xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> 登入並載入雲端資料
-                </button>
+               <button onclick="googleDriveLogin()" class="w-full py-3.5 bg-[#796348] hover:bg-[#614f39] text-white rounded-2xl font-bold">
+    <i class="fa-brands fa-google mr-2"></i> 使用 Google 帳號登入
+</button>
                 
                 <!-- 新增的隱藏檔案輸入框 -->
                 <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="loadDataFromJson(event)">
@@ -323,7 +320,30 @@
         function mockCloudAction(message) {
             showToast(message, 'info');
         }
+// Google 登入
+googleDriveLogin() {
+    const client = google.accounts.oauth2.initTokenClient({
+        client_id: '984233136356-tidh1hr3nbbi3f85fegj2jkm9iophcp2.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: (response) => {
+            if (response.error) {
+                Toast('Google 登入失敗，請再試一次', 'error');
+                return;
+            }
 
+            this.googleAccessToken = response.access_token;
+
+            const statusText = document.getElementById('cloudStatusText');
+            if (statusText) {
+                statusText.textContent = 'Google 帳號已連線，可使用雲端同步';
+            }
+
+            Toast('Google 帳號登入成功！', 'success');
+        }
+    });
+
+    client.requestAccessToken();
+}
         function playDepositSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
